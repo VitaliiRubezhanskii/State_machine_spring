@@ -19,28 +19,41 @@ import javax.persistence.*;
 @Access(AccessType.FIELD)
 @Data
 @Table(name = "orders", indexes = @Index(columnList = "currentState"))
-public class Order extends AbstractPersistable<Long>
-        implements ContextEntity<OrderState, OrderEvent, Long> { // NOSONAR
+public class Order{
+//        extends AbstractPersistable<Long>
+//        implements ContextEntity<OrderState, OrderEvent, Long> { // NOSONAR
 
     private static final long serialVersionUID = 8848887579564649636L;
 
-    @Getter
-    @JsonIgnore
-    StateMachineContext<OrderState, OrderEvent> stateMachineContext; // NOSONAR
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private int id;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+//    @Getter
+//    @JsonIgnore
+//    StateMachineContext<OrderState, OrderEvent> stateMachineContext; // NOSONAR
 
     @Getter
     @Enumerated(EnumType.STRING)
     OrderState currentState;
 
-    @Override
-    public void setStateMachineContext(@NonNull StateMachineContext<OrderState, OrderEvent> stateMachineContext) {
-        this.currentState = stateMachineContext.getState();
-        this.stateMachineContext = stateMachineContext;
-    }
+//    @Override
+//    public void setStateMachineContext(@NonNull StateMachineContext<OrderState, OrderEvent> stateMachineContext) {
+//        this.currentState = stateMachineContext.getState();
+//        this.stateMachineContext = stateMachineContext;
+//    }
 
-    @JsonIgnore
-    @Override
-    public boolean isNew() {
-        return super.isNew();
-    }
+//    @JsonIgnore
+//    @Override
+//    public boolean isNew() {
+//        return super.isNew();
+//    }
 }

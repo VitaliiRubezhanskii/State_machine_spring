@@ -5,5 +5,6 @@ public enum OrderState {
     ReadyForDelivery,
     AwaitingPayment,
     Completed,
-    Canceled
+    Canceled,
+    Managed
 }

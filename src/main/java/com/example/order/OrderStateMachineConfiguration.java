@@ -1,12 +1,10 @@
 package com.example.order;
 
-import java.util.EnumSet;
-
 import com.example.configuration.OrderStateMachineListener;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.messaging.Message;
 import org.springframework.statemachine.ExtendedState;
 import org.springframework.statemachine.action.Action;
 import org.springframework.statemachine.config.EnableStateMachineFactory;
@@ -15,11 +13,8 @@ import org.springframework.statemachine.config.builders.StateMachineConfiguratio
 import org.springframework.statemachine.config.builders.StateMachineStateConfigurer;
 import org.springframework.statemachine.config.builders.StateMachineTransitionConfigurer;
 import org.springframework.statemachine.guard.Guard;
-import org.springframework.statemachine.listener.StateMachineListener;
-import org.springframework.statemachine.listener.StateMachineListenerAdapter;
-import org.springframework.statemachine.state.State;
 
-import lombok.extern.slf4j.Slf4j;
+import java.util.EnumSet;
 
 @Configuration
 @Slf4j
@@ -111,14 +106,14 @@ public class OrderStateMachineConfiguration extends EnumStateMachineConfigurerAd
             .withExternal()
                 .source(OrderState.ReadyForDelivery)
                 .target(OrderState.Completed)
-//                .guard(isPaid())
+                .guard(isPaid())
                 .event(OrderEvent.Deliver)
             .and()
             // (3)
             .withExternal()
                 .source(OrderState.ReadyForDelivery)
                 .target(OrderState.Canceled)
-//                .guard(isPaid())
+                .guard(isPaid())
                 .event(OrderEvent.Refund)
                 .action(refundPayment())
             .and()
@@ -163,7 +158,7 @@ public class OrderStateMachineConfiguration extends EnumStateMachineConfigurerAd
             .and()
             // (10)
             .withExternal()
-                .source(OrderState.AwaitingPayment)
+                .source(OrderState.Open)
                 .target(OrderState.Completed)
                 .event(OrderEvent.ReceivePayment)
                 .action(receivePayment())
@@ -179,8 +174,7 @@ public class OrderStateMachineConfiguration extends EnumStateMachineConfigurerAd
                 .source(OrderState.Canceled)
                 .event(OrderEvent.ReceivePayment)
                 .action(receivePayment())
-            .and()
-            ;
+            .and();
     }
 
     public Action<OrderState, OrderEvent> receivePayment() {
@@ -206,6 +200,11 @@ public class OrderStateMachineConfiguration extends EnumStateMachineConfigurerAd
     }
 
     void setPaid(ExtendedState extendedState) {
+      Order o =  ((Order)extendedState.getVariables().get("order"));
+
+      o.setCurrentState(OrderState.Managed); // Business logic
+
+      extendedState.getVariables().put("order", o);
         log.info("Setting paid");
         extendedState.getVariables().put("paid", Boolean.TRUE);
     }
