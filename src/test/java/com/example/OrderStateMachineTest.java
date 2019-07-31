@@ -4,15 +4,16 @@ import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.statemachine.StateMachine;
 import org.springframework.statemachine.config.StateMachineFactory;
-import org.springframework.statemachine.test.AbstractStateMachineTests;
-import org.springframework.statemachine.test.StateMachineTestPlan;
-import org.springframework.statemachine.test.StateMachineTestPlanBuilder;
+
 
 import com.example.order.OrderEvent;
 import com.example.order.OrderState;
 import com.example.order.OrderStateMachineConfiguration;
 
 import lombok.SneakyThrows;
+import org.springframework.statemachine.test.AbstractStateMachineTests;
+import org.springframework.statemachine.test.StateMachineTestPlan;
+import org.springframework.statemachine.test.StateMachineTestPlanBuilder;
 
 public class OrderStateMachineTest extends AbstractStateMachineTests {
 

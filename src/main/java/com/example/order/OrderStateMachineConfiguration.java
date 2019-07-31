@@ -2,7 +2,10 @@ package com.example.order;
 
 import java.util.EnumSet;
 
+import com.example.configuration.OrderStateMachineListener;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.messaging.Message;
 import org.springframework.statemachine.ExtendedState;
 import org.springframework.statemachine.action.Action;
@@ -21,13 +24,17 @@ import lombok.extern.slf4j.Slf4j;
 @Configuration
 @Slf4j
 @EnableStateMachineFactory(contextEvents=false)
+@Import(OrderStateMachineListener.class)
 public class OrderStateMachineConfiguration extends EnumStateMachineConfigurerAdapter<OrderState, OrderEvent> {
+
+    @Autowired
+    private OrderStateMachineListener orderStateMachineListener;
 
     @Override
     public void configure(StateMachineConfigurationConfigurer<OrderState, OrderEvent> config) throws Exception {
         config
         .withConfiguration()
-        .listener(loggingListener());
+        .listener(orderStateMachineListener);
     }
 
     @Override
@@ -39,18 +46,6 @@ public class OrderStateMachineConfiguration extends EnumStateMachineConfigurerAd
                 .states(EnumSet.allOf(OrderState.class));
     }
 
-    public StateMachineListener<OrderState, OrderEvent> loggingListener() {
-        return new StateMachineListenerAdapter<>() {
-            @Override
-            public void stateChanged(State<OrderState, OrderEvent> from, State<OrderState, OrderEvent> to) {
-                log.info("State changed to {}", to.getId());
-            }
-            @Override
-            public void eventNotAccepted(Message<OrderEvent> event) {
-                log.error("Event not accepted: {}", event.getPayload());
-            }
-        };
-    }
 
 
 /**
@@ -116,14 +111,14 @@ public class OrderStateMachineConfiguration extends EnumStateMachineConfigurerAd
             .withExternal()
                 .source(OrderState.ReadyForDelivery)
                 .target(OrderState.Completed)
-                .guard(isPaid())
+//                .guard(isPaid())
                 .event(OrderEvent.Deliver)
             .and()
             // (3)
             .withExternal()
                 .source(OrderState.ReadyForDelivery)
                 .target(OrderState.Canceled)
-                .guard(isPaid())
+//                .guard(isPaid())
                 .event(OrderEvent.Refund)
                 .action(refundPayment())
             .and()

@@ -51,7 +51,7 @@ public class OrderStateMachineIntegrationTest {
         o = repo.saveAndFlush(o);
         StateMachine<OrderState, OrderEvent> orderStateMachine = orderStateFactory.getStateMachine();
         orderStateMachine.start();
-        orderStateMachine.sendEvent(OrderEvent.UnlockDelivery);
+        orderStateMachine.sendEvent(OrderEvent.ReceivePayment);
 
         // when persisting and making sure we flushed and cleared all caches...
         persister.persist(orderStateMachine, o);
@@ -61,6 +61,7 @@ public class OrderStateMachineIntegrationTest {
         // then the state is set on the order.
         o = repo.getOne(o.getId());
         assertThat(o.getStateMachineContext()).isNotNull();
+        assertThat(o.getStateMachineContext().getState()).isEqualTo(OrderState.ReadyForDelivery);
         assertThat(o.getCurrentState()).isEqualTo(OrderState.ReadyForDelivery);
 
         // and the statemachinecontext can be used to restore a new state

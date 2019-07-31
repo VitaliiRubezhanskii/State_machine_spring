@@ -6,12 +6,13 @@ import org.springframework.statemachine.persist.StateMachinePersister;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
+@Component
 public class DefaultStateMachineAdapter<S, E, T> {
 
     final StateMachineFactory<S, E> stateMachineFactory;
-
     final StateMachinePersister<S, E, T> persister;
 
     @SneakyThrows
