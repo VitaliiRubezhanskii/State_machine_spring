@@ -1,7 +1,11 @@
 package com.example.order;
 
 import com.example.configuration.OrderStateMachineListener;
+import com.example.message.Message;
+import com.example.message.MessageEvent;
+import com.example.message.MessageState;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -15,6 +19,7 @@ import org.springframework.statemachine.config.builders.StateMachineTransitionCo
 import org.springframework.statemachine.guard.Guard;
 
 import java.util.EnumSet;
+import java.util.Objects;
 
 @Configuration
 @Slf4j
@@ -99,8 +104,9 @@ public class OrderStateMachineConfiguration extends EnumStateMachineConfigurerAd
             // (1)
                 .source(OrderState.Open)
                 .target(OrderState.ReadyForDelivery)
+                .guard(isMessageIdValid())
                 .event(OrderEvent.ReceivePayment)
-                .action(receivePayment())
+                .action(refundPayment())
             .and()
             // (2)
             .withExternal()
@@ -182,7 +188,8 @@ public class OrderStateMachineConfiguration extends EnumStateMachineConfigurerAd
     }
 
     public Action<OrderState, OrderEvent> refundPayment() {
-        return context -> setUnpaid(context.getExtendedState());
+        return context-> putMessageToMachineContext(context.getExtendedState());
+//        return context -> setUnpaid(context.getExtendedState());
     }
 
     private Guard<OrderState, OrderEvent> isPaid() {
@@ -200,6 +207,7 @@ public class OrderStateMachineConfiguration extends EnumStateMachineConfigurerAd
     }
 
     void setPaid(ExtendedState extendedState) {
+
       Order o =  ((Order)extendedState.getVariables().get("order"));
 
       o.setCurrentState(OrderState.Managed); // Business logic
@@ -208,5 +216,18 @@ public class OrderStateMachineConfiguration extends EnumStateMachineConfigurerAd
         log.info("Setting paid");
         extendedState.getVariables().put("paid", Boolean.TRUE);
     }
+
+
+   // =============================Message agnostic logic  ==========================================
+
+    private void putMessageToMachineContext(ExtendedState extendedState){
+        System.out.println("TRANSFER TO CHANNEL_CHECKING STATE");
+    }
+
+    private Guard<OrderState, OrderEvent> isMessageIdValid(){
+        return context->
+          StringUtils.isNotEmpty(((Order)context.getExtendedState().getVariables().get("order")).getMark());
+    }
+
 
 }

@@ -2,7 +2,6 @@ package com.example.order;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.bson.types.ObjectId;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.statemachine.StateMachine;
@@ -14,12 +13,10 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-public class OrderEventController {
+public class OrderEventController { // Refactor to Rabbit listener
 
 
     private final StateMachineFactory<OrderState, OrderEvent> stateMachineFactory;
-    private final OrderRepository orderRepository;
-
 
 
     @RequestMapping(path = "/orders/receive/{event}", method = RequestMethod.POST)
@@ -37,7 +34,7 @@ public class OrderEventController {
         if (stateMachine.sendEvent(event)) {
 
             Object expectManaged = extendedState.get("order");
-            orderRepository.save(order);
+
 
             return ResponseEntity.accepted().build();
         } else {
